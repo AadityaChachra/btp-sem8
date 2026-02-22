@@ -1,0 +1,44 @@
+# Sequential pipeline tasks — each task feeds the next for explainability.
+
+research_task:
+  description: >
+    For the stock ticker "{ticker}", use the Financial News tool to fetch recent
+    news and headlines. Analyze the content to determine market sentiment:
+    Bullish, Bearish, or Neutral. Summarize the main qualitative factors
+    (earnings, macro, sector, company-specific) that could affect this asset.
+    Do not recommend Buy/Sell; only report sentiment and key themes.
+  expected_output: >
+    A concise sentiment report: (1) Overall sentiment (Bullish/Bearish/Neutral),
+    (2) Key themes from the news, (3) Main qualitative risks or catalysts.
+  agent: researcher
+
+quant_task:
+  description: >
+    For the stock ticker "{ticker}", use the Market Data tool to retrieve
+    historical prices and technical indicators. Summarize: recent price trend,
+    position vs. moving averages (e.g. SMA20, SMA50), volatility, and any
+    technical entry/exit considerations. Ignore news; use only the numerical
+    output from the tool.
+  expected_output: >
+    A concise technical report: (1) Price trend and key levels, (2) Indicator
+    summary (e.g. above/below SMAs, volatility), (3) Technical entry/exit
+    considerations. No Buy/Sell recommendation yet.
+  agent: quant
+  context:
+    - research_task
+
+decision_task:
+  description: >
+    You are the Portfolio Manager. You have received (1) the Researcher's
+    sentiment report and (2) the Quant's technical report for "{ticker}".
+    Synthesize both inputs. Consider risk vs. reward and any conflicts
+    between sentiment and technicals. Produce your final recommendation.
+  expected_output: >
+    (1) Final recommendation: exactly one of [BUY, SELL, HOLD].
+    (2) A short, clear justification (2–4 sentences) that references both
+    the sentiment and the technical analysis. This will be shown to the
+    user as the auditable decision.
+  agent: portfolio_manager
+  context:
+    - research_task
+    - quant_task
