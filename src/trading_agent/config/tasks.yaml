@@ -17,8 +17,11 @@ quant_task:
     For the stock ticker "{ticker}", use the Market Data tool to retrieve
     historical prices and technical indicators. Summarize: recent price trend,
     position vs. moving averages (e.g. SMA20, SMA50), volatility, and any
-    technical entry/exit considerations. Ignore news; use only the numerical
-    output from the tool.
+    technical entry/exit considerations.
+    IMPORTANT: You are a QUANTITATIVE analyst. Do NOT include any sentiment
+    analysis, news themes, or qualitative factors in your report. Ignore any
+    prior reports or context you may have received. Use ONLY the numerical
+    output from the Market Data tool. Your report must contain numbers only.
   expected_output: >
     A concise technical report: (1) Price trend and key levels, (2) Indicator
     summary (e.g. above/below SMAs, volatility), (3) Technical entry/exit

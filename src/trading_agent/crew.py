@@ -116,7 +116,7 @@ class TradingAgentCrew:
 
     @task
     def quant_task(self) -> Task:
-        return Task(config=self.tasks_config["quant_task"])
+        return Task(config=self.tasks_config["quant_task"], context=[])
 
     @task
     def decision_task(self) -> Task:
@@ -225,11 +225,21 @@ def run_crew(ticker: str, api_key: str | None = None, progress_file: str | Path 
     decision_output = tasks_outputs[2] if len(tasks_outputs) > 2 else (result.raw if hasattr(result, "raw") else "")
 
     # Parse final recommendation from decision_output
+    import re as _re
     rec = "HOLD"
-    for word in ["BUY", "SELL", "HOLD"]:
-        if word in (decision_output or "").upper():
-            rec = word
-            break
+    _dec_upper = (decision_output or "").upper()
+    # 1) Look for explicit "Recommendation: BUY/SELL/HOLD" pattern first
+    _rec_match = _re.search(
+        r"(?:FINAL\s+)?RECOMMENDATION\s*[:\-]\s*(BUY|SELL|HOLD)", _dec_upper
+    )
+    if _rec_match:
+        rec = _rec_match.group(1)
+    else:
+        # 2) Fallback: find the LAST standalone BUY/SELL/HOLD (the PM's own conclusion,
+        #    not a reference to news like "Buy Rating on Broadcom")
+        _standalone = _re.findall(r"\b(BUY|SELL|HOLD)\b", _dec_upper)
+        if _standalone:
+            rec = _standalone[-1]
 
     return {
         "recommendation": rec,

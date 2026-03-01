@@ -32,9 +32,13 @@ class NewsFetchTool(BaseTool):
                 return f"No recent news found for {ticker}. Consider sentiment as neutral or data unavailable."
             lines = [f"News for {ticker}:\n"]
             for i, n in enumerate(news[:15], 1):
-                title = n.get("title", "No title")
-                link = n.get("link", "")
-                pub = n.get("publisher", "")
+                # yfinance >= 0.2.40 nests data under "content"
+                content = n.get("content", n)  # fall back to flat dict for older versions
+                title = content.get("title", n.get("title", "No title"))
+                provider = content.get("provider", {})
+                pub = provider.get("displayName", "") if isinstance(provider, dict) else n.get("publisher", "")
+                click = content.get("clickThroughUrl", {})
+                link = click.get("url", "") if isinstance(click, dict) else n.get("link", "")
                 lines.append(f"{i}. {title}")
                 if pub:
                     lines.append(f"   Publisher: {pub}")
